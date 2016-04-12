@@ -25,7 +25,7 @@
          * @var    string
          * @access protected
          */
-        protected $_base = 'https://api.pexels.com/';
+        protected $_base = 'https://api.pexels.com/v1/search';
 
         /**
          * _key
@@ -74,33 +74,21 @@
          */
         public function _get(array $args)
         {
-            // Path to request
-            $responseGroup = 'image_details';
-            if ($this->_hd === true) {
-                $responseGroup = 'high_resolution';
-            }
-            $args = array_merge(
-                array(
-                    'key' => $this->_key,
-                    'response_group' => $responseGroup,
-                ),
-                $args
-            );
-            $path = http_build_query($args);
-            $url = ($this->_base) . '?' . ($path);
-
-            // Stream (to ignore 400 errors)
-            $opts = array(
+            // Auth
+            $context = stream_context_create(array(
                 'http' => array(
                     'method' => 'GET',
-                    'ignore_errors' => true
+                    'ignore_errors' => true,
+                    'header' => 'Authorization: ' . ($this->_key)
                 )
-            );
+            ));
 
-            // Make the request
-            $context = stream_context_create($opts);
+            // Build the query
+            $path = http_build_query($args);
+            $url = ($this->_base) . '?' . ($path);
             $response = file_get_contents($url, false, $context);
-            $headers = $this->_getRateLimits($http_response_header);
+            $headers = $http_response_header;
+            $limits = $this->_getRateLimits($http_response_header);
 
             // Attempt request; fail with false if it bails
             json_decode($response);
@@ -113,8 +101,42 @@
 
             // Fail
             error_log('Pexels:    failed response');
-            // error_log($response);
             return false;
+        }
+
+        /**
+         * _getRateLimits
+         * 
+         * @see    http://php.net/manual/en/reserved.variables.httpresponseheader.php
+         * @access protected
+         * @param  array $http_response_header
+         * @return array
+         */
+        public function _getRateLimits(array $http_response_header)
+        {
+            $headers = $http_response_header;
+            $formatted = array();
+            foreach ($headers as $header) {
+                $pieces = explode(':', $header);
+                if (count($pieces) >= 2) {
+                    $formatted[$pieces[0]] = $pieces[1];
+                }
+            }
+            $limits = array(
+                'remaining' => false,
+                'limit' => false,
+                'reset' => false
+            );
+            if (isset($formatted['X-Ratelimit-Remaining']) === true) {
+                $limits['remaining'] = $formatted['X-Ratelimit-Remaining'];
+            }
+            if (isset($formatted['X-Ratelimit-Limit']) === true) {
+                $limits['limit'] = $formatted['X-Ratelimit-Limit'];
+            }
+            if (isset($formatted['X-Ratelimit-Reset']) === true) {
+                $limits['reset'] = $formatted['X-Ratelimit-Reset'];
+            }
+            return $limits;
         }
 
         /**
@@ -142,12 +164,12 @@
 
             // Add original query
             if ($this->_associative === true) {
-                foreach ($response['hits'] as $index => $hit) {
-                    $response['hits'][$index]['original_query'] = $query;
+                foreach ($response['photos'] as $index => $hit) {
+                    $response['photos'][$index]['original_query'] = $query;
                 }
             } else {
-                foreach ($response->hits as $index => $hit) {
-                    $response->hits[$index]->original_query = $query;
+                foreach ($response->photos as $index => $hit) {
+                    $response->photos[$index]->original_query = $query;
                 }
             }
             return $response;
