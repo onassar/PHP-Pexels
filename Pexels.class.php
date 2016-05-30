@@ -152,6 +152,7 @@
             $args = array_merge(
                 array(
                     'query' => $query,
+                    'size' => 1,
                     'page' => $this->_page,
                     'per_page' => $this->_photosPerPage
                 ),
