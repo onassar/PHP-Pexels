@@ -36,6 +36,14 @@
         protected $_key = false;
 
         /**
+         * _limits
+         * 
+         * @var    null|array
+         * @access protected
+         */
+        protected $_limits = null;
+
+        /**
          * _page
          * 
          * @var    string (default: '1')
@@ -88,7 +96,7 @@
             $url = ($this->_base) . '?' . ($path);
             $response = file_get_contents($url, false, $context);
             $headers = $http_response_header;
-            $limits = $this->_getRateLimits($http_response_header);
+            $this->_limits = $this->_getRateLimits($http_response_header);
 
             // Attempt request; fail with false if it bails
             json_decode($response);
@@ -128,15 +136,26 @@
                 'reset' => false
             );
             if (isset($formatted['X-Ratelimit-Remaining']) === true) {
-                $limits['remaining'] = $formatted['X-Ratelimit-Remaining'];
+                $limits['remaining'] = (int) trim($formatted['X-Ratelimit-Remaining']);
             }
             if (isset($formatted['X-Ratelimit-Limit']) === true) {
-                $limits['limit'] = $formatted['X-Ratelimit-Limit'];
+                $limits['limit'] = (int) trim($formatted['X-Ratelimit-Limit']);
             }
             if (isset($formatted['X-Ratelimit-Reset']) === true) {
-                $limits['reset'] = $formatted['X-Ratelimit-Reset'];
+                $limits['reset'] = (int) trim($formatted['X-Ratelimit-Reset']);
             }
             return $limits;
+        }
+
+        /**
+         * getLimits
+         * 
+         * @access public
+         * @return null|array
+         */
+        public function getLimits()
+        {
+            return $this->_limits;
         }
 
         /**
