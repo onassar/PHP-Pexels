@@ -108,7 +108,7 @@
             }
 
             // Fail
-            error_log('Pexels:    failed response');
+            // error_log('Pexels:    failed response');
             return false;
         }
 
