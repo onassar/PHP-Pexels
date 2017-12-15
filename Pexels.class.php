@@ -5,67 +5,67 @@
      * 
      * PHP wrapper for Pexels
      * 
-     * @author Oliver Nassar <onassar@gmail.com>
-     * @see    https://github.com/onassar/PHP-Pexels
-     * @see    https://www.pexels.com/api/
+     * @link    https://www.pexels.com/api/
+     * @link    https://github.com/onassar/PHP-Pexels
+     * @author  Oliver Nassar <onassar@gmail.com>
      */
     class Pexels
     {
         /**
          * _associative
          * 
-         * @var    boolean
-         * @access protected
+         * @var     boolean
+         * @access  protected
          */
         protected $_associative;
 
         /**
          * _base
          * 
-         * @var    string
-         * @access protected
+         * @var     string
+         * @access  protected
          */
         protected $_base = 'https://api.pexels.com/v1/search';
 
         /**
          * _key
          * 
-         * @var    false|string (default: false)
-         * @access protected
+         * @var     false|string (default: false)
+         * @access  protected
          */
         protected $_key = false;
 
         /**
          * _limits
          * 
-         * @var    null|array
-         * @access protected
+         * @var     null|array
+         * @access  protected
          */
         protected $_limits = null;
 
         /**
          * _page
          * 
-         * @var    string (default: '1')
-         * @access protected
+         * @var     string (default: '1')
+         * @access  protected
          */
         protected $_page = '1';
 
         /**
          * _photosPerPage
          * 
-         * @var    string (default: '20')
-         * @access protected
+         * @var     string (default: '20')
+         * @access  protected
          */
         protected $_photosPerPage = '20';
 
         /**
          * __construct
          * 
-         * @access public
-         * @param  string $key
-         * @param  boolean $associative (default: true)
-         * @return void
+         * @access  public
+         * @param   string $key
+         * @param   boolean $associative (default: true)
+         * @return  void
          */
         public function __construct($key, $associative = true)
         {
@@ -76,9 +76,9 @@
         /**
          * _get
          * 
-         * @access protected
-         * @param  array $args
-         * @return false|array|stdClass
+         * @access  protected
+         * @param   array $args
+         * @return  false|array|stdClass
          */
         public function _get(array $args)
         {
@@ -115,10 +115,10 @@
         /**
          * _getRateLimits
          * 
-         * @see    http://php.net/manual/en/reserved.variables.httpresponseheader.php
-         * @access protected
-         * @param  array $http_response_header
-         * @return array
+         * @see     http://php.net/manual/en/reserved.variables.httpresponseheader.php
+         * @access  protected
+         * @param   array $http_response_header
+         * @return  array
          */
         public function _getRateLimits(array $http_response_header)
         {
@@ -150,8 +150,8 @@
         /**
          * getLimits
          * 
-         * @access public
-         * @return null|array
+         * @access  public
+         * @return  null|array
          */
         public function getLimits()
         {
@@ -161,10 +161,10 @@
         /**
          * query
          * 
-         * @access public
-         * @param  string $query
-         * @param  array $args (default: array())
-         * @return false|array|stdClass
+         * @access  public
+         * @param   string $query
+         * @param   array $args (default: array())
+         * @return  false|array|stdClass
          */
         public function query($query, array $args = array())
         {
@@ -198,9 +198,9 @@
         /**
          * setPage
          * 
-         * @access public
-         * @param  string $page
-         * @return void
+         * @access  public
+         * @param   string $page
+         * @return  void
          */
         public function setPage($page)
         {
@@ -210,9 +210,9 @@
         /**
          * setPhotosPerPage
          * 
-         * @access public
-         * @param  string $photosPerPage
-         * @return void
+         * @access  public
+         * @param   string $photosPerPage
+         * @return  void
          */
         public function setPhotosPerPage($photosPerPage)
         {
