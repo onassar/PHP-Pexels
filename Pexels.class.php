@@ -193,7 +193,7 @@
         {
             $queryData = array(
                 'query' => $query,
-                'size' => 1,
+                'size' => 1
             );
             return $queryData;
         }
