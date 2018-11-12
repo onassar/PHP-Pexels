@@ -13,6 +13,14 @@
     class Pexels
     {
         /**
+         * _attemptSleepDelay
+         * 
+         * @var     int (default: 2000) in milliseconds
+         * @access  protected
+         */
+        protected $_attemptSleepDelay = 2000;
+
+        /**
          * _base
          * 
          * @var     string (default: 'https://api.pexels.com')
@@ -43,6 +51,14 @@
          * @access  protected
          */
         protected $_limit = 40;
+
+        /**
+         * _logClosure
+         * 
+         * @var     null|Closure (defualt: null)
+         * @access  protected
+         */
+        protected $_logClosure = null;
 
         /**
          * _maxPerPage
@@ -116,6 +132,59 @@
             }
             $url = ($url) . '&' . ($query);
             return $url;
+        }
+
+        /**
+         * _attempt
+         * 
+         * Method which accepts a closure, and repeats calling it until
+         * $attempts have been made.
+         * 
+         * This was added to account for file_get_contents failing (for a
+         * variety of reasons).
+         * 
+         * @access  protected
+         * @param   Closure $closure
+         * @param   int $attempt (default: 1)
+         * @param   int $attempts (default: 2)
+         * @return  null|string
+         */
+        protected function _attempt(Closure $closure, int $attempt = 1, int $attempts = 2): ?string
+        {
+            try {
+                $response = call_user_func($closure);
+                if ($attempt !== 1) {
+                    $msg = 'Subsequent success on attempt #' . ($attempt);
+                    $this->_log($msg);
+                }
+                return $response;
+            } catch (Exception $exception) {
+                $msg = 'Invalid closure attempt';
+                $this->_log($msg);
+                if ($attempt < $attempts) {
+                    $delay = $this->_attemptSleepDelay;
+                    $msg = 'Going to sleep for ' . ($delay);
+                    LogUtils::log($msg);
+                    $this->_sleep($delay);
+                    $response = $this->_attempt($closure, $attempt + 1, $attempts);
+                    return $response;
+                }
+                $msg = 'Failed closure attempt';
+                $this->_log($msg);
+            }
+            return null;
+        }
+
+        /**
+         * _sleep
+         * 
+         * @access  protected
+         * @param   int $duration in milliseconds
+         * @return  void
+         */
+        protected function _sleep(int $duration): void
+        {
+            usleep($duration * 1000);
         }
 
         /**
@@ -302,6 +371,25 @@
         }
 
         /**
+         * _log
+         * 
+         * @access  protected
+         * @param   string $msg
+         * @return  bool
+         */
+        protected function _log(string $msg): bool
+        {
+            if ($this->_logClosure === null) {
+                error_log($msg);
+                return false;
+            }
+            $closure = $this->_logClosure;
+            $args = array($msg);
+            call_user_func_array($closure, $args);
+            return true;
+        }
+
+        /**
          * _requestUrl
          * 
          * @access  protected
@@ -311,8 +399,15 @@
         protected function _requestUrl(string $url): ?string
         {
             $streamContext = $this->_getRequestStreamContext();
-            $response = file_get_contents($url, false, $streamContext);
+            $closure = function() use ($url, $streamContext) {
+                $response = file_get_contents($url, false, $streamContext);
+                return $response;
+            };
+            $response = $this->_attempt($closure);
             if ($response === false) {
+                return null;
+            }
+            if ($response === null) {
                 return null;
             }
             if (isset($http_response_header) === true) {
@@ -403,6 +498,18 @@
         public function setLimit($limit)
         {
             $this->_limit = $limit;
+        }
+
+        /**
+         * setLogClosure
+         * 
+         * @access  public
+         * @param   Closure $closure
+         * @return  void
+         */
+        public function setLogClosure(Closure $closure)
+        {
+            $this->_logClosure = $closure;
         }
 
         /**
