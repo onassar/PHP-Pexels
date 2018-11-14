@@ -159,7 +159,9 @@
                 }
                 return $response;
             } catch (Exception $exception) {
-                $msg = 'Invalid closure attempt';
+                $msg = 'Failed closure';
+                $this->_log($msg);
+                $msg = $exception->getMessage();
                 $this->_log($msg);
                 if ($attempt < $attempts) {
                     $delay = $this->_attemptSleepDelay;
@@ -169,22 +171,10 @@
                     $response = $this->_attempt($closure, $attempt + 1, $attempts);
                     return $response;
                 }
-                $msg = 'Failed closure attempt';
+                $msg = 'Failed attempt';
                 $this->_log($msg);
             }
             return null;
-        }
-
-        /**
-         * _sleep
-         * 
-         * @access  protected
-         * @param   int $duration in milliseconds
-         * @return  void
-         */
-        protected function _sleep(int $duration): void
-        {
-            usleep($duration * 1000);
         }
 
         /**
@@ -431,6 +421,18 @@
             $int = (int) $int;
             $lowered = floor($int / $interval) * $interval;
             return $lowered;
+        }
+
+        /**
+         * _sleep
+         * 
+         * @access  protected
+         * @param   int $duration in milliseconds
+         * @return  void
+         */
+        protected function _sleep(int $duration): void
+        {
+            usleep($duration * 1000);
         }
 
         /**
