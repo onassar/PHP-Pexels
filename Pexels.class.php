@@ -115,14 +115,14 @@
         }
 
         /**
-         * _addUrlParams
+         * _addURLParams
          * 
          * @access  protected
          * @param   string $url
          * @param   array $params
          * @return  string
          */
-        protected function _addUrlParams(string $url, array $params): string
+        protected function _addURLParams(string $url, array $params): string
         {
             $query = http_build_query($params);
             $piece = parse_url($url, PHP_URL_QUERY);
@@ -187,8 +187,8 @@
         protected function _get(array $requestData): ?array
         {
             // Make the request
-            $url = $this->_getSearchUrl($requestData);
-            $response = $this->_requestUrl($url);
+            $url = $this->_getSearchURL($requestData);
+            $response = $this->_requestURL($url);
             if ($response === null) {
                 return null;
             }
@@ -344,19 +344,19 @@
         }
 
         /**
-         * _getSearchUrl
+         * _getSearchURL
          * 
          * @access  protected
          * @param   array $requestData
          * @return  string
          */
-        protected function _getSearchUrl(array $requestData): string
+        protected function _getSearchURL(array $requestData): string
         {
             $base = $this->_base;
             $path = $this->_paths['search'];
             $data = $requestData;
             $url = ($base) . ($path);
-            $url = $this->_addUrlParams($url, $data);
+            $url = $this->_addURLParams($url, $data);
             return $url;
         }
 
@@ -380,13 +380,13 @@
         }
 
         /**
-         * _requestUrl
+         * _requestURL
          * 
          * @access  protected
          * @param   string $url
          * @return  null|string
          */
-        protected function _requestUrl(string $url): ?string
+        protected function _requestURL(string $url): ?string
         {
             $streamContext = $this->_getRequestStreamContext();
             $closure = function() use ($url, $streamContext) {
