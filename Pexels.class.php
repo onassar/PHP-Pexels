@@ -497,7 +497,7 @@
          * @param   string $limit
          * @return  void
          */
-        public function setLimit($limit)
+        public function setLimit($limit): void
         {
             $this->_limit = $limit;
         }
@@ -509,7 +509,7 @@
          * @param   Closure $closure
          * @return  void
          */
-        public function setLogClosure(Closure $closure)
+        public function setLogClosure(Closure $closure): void
         {
             $this->_logClosure = $closure;
         }
@@ -521,8 +521,20 @@
          * @param   string $offset
          * @return  void
          */
-        public function setOffset($offset)
+        public function setOffset($offset): void
         {
             $this->_offset = $offset;
+        }
+
+        /**
+         * setRequestTimeout
+         * 
+         * @access  public
+         * @param   int $requestTimeout
+         * @return  void
+         */
+        public function setRequestTimeout(int $requestTimeout): void
+        {
+            $this->_requestTimeout = $requestTimeout;
         }
     }
