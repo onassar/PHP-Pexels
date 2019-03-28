@@ -463,7 +463,7 @@
                 $headers = $this->_getCURLRequestHeaders();
                 $requestTimeout = $this->_requestTimeout;
                 $ch = curl_init($url);
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $requestTimeout);
                 curl_setopt($ch, CURLOPT_TIMEOUT, $requestTimeout);
                 curl_setopt($ch, CURLOPT_HEADER, 1);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
