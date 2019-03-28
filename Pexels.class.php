@@ -403,6 +403,31 @@
         }
 
         /**
+         * _parseCURLResponse
+         * 
+         * This method was required because at times the cURL requests would not
+         * return the headers, which would cause issues.
+         * 
+         * @access  protected
+         * @param   string $response
+         * @return  array
+         */
+        protected function _parseCURLResponse(string $response): array
+        {
+            $delimiter = "\r\n\r\n";
+            $pieces = explode($delimiter, $response);
+            if (count($pieces) === 1) {
+                $headers = '';
+                $body = $response;
+                $response = array($headers, $body);
+                return $response;
+            }
+            list($headers, $body) = explode("\r\n\r\n", $response, 2);
+            $response = array($headers, $body);
+            return $response;
+        }
+
+        /**
          * _requestURL
          * 
          * @throws  Exception
@@ -454,7 +479,7 @@
             if ($response === null) {
                 return null;
             }
-            list($headers, $body) = explode("\r\n\r\n", $response, 2);
+            list($headers, $body) = $this->_parseCURLResponse($response);
             $this->_setCURLResponseHeaders($headers);
             return $body;
         }
