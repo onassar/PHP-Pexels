@@ -77,6 +77,14 @@
         protected $_offset = 0;
 
         /**
+         * _requestApproach
+         * 
+         * @var     string (default: 'streams')
+         * @access  protected
+         */
+        protected $_requestApproach = 'streams';
+
+        /**
          * _paths
          * 
          * @var     array
@@ -140,8 +148,8 @@
          * Method which accepts a closure, and repeats calling it until
          * $attempts have been made.
          * 
-         * This was added to account for file_get_contents failing (for a
-         * variety of reasons).
+         * This was added to account for requests failing (for a variety of
+         * reasons).
          * 
          * @access  protected
          * @param   Closure $closure
@@ -203,6 +211,21 @@
             // Response formatting
             $response = json_decode($response, true);
             return $response;
+        }
+
+        /**
+         * _getCURLRequestHeaders
+         * 
+         * @access  protected
+         * @return  array
+         */
+        protected function _getCURLRequestHeaders(): array
+        {
+            $key = $this->_key;
+            $headers = array(
+                'Authorization: ' . ($key)
+            );
+            return $headers;
         }
 
         /**
@@ -382,15 +405,46 @@
         /**
          * _requestURL
          * 
+         * @throws  Exception
          * @access  protected
          * @param   string $url
          * @return  null|string
          */
         protected function _requestURL(string $url): ?string
         {
-            $streamContext = $this->_getRequestStreamContext();
-            $closure = function() use ($url, $streamContext) {
-                $response = file_get_contents($url, false, $streamContext);
+            if ($this->_requestApproach === 'cURL') {
+                $response = $this->_requestURLUsingCURL($url);
+                return $response;
+            }
+            if ($this->_requestApproach === 'streams') {
+                $response = $this->_requestURLUsingStreams($url);
+                return $response;
+            }
+            $msg = 'Invalid request approach';
+            throw new Exception($msg);
+        }
+
+        /**
+         * _requestURLUsingCURL
+         * 
+         * @see     https://stackoverflow.com/a/9183272/115025
+         * @access  protected
+         * @param   string $url
+         * @return  null|string
+         */
+        protected function _requestURLUsingCURL(string $url): ?string
+        {
+            $closure = function() use ($url) {
+                $headers = $this->_getCURLRequestHeaders();
+                $requestTimeout = $this->_requestTimeout;
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+                curl_setopt($ch, CURLOPT_TIMEOUT, $requestTimeout);
+                curl_setopt($ch, CURLOPT_HEADER, 1);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $response = curl_exec($ch);
+                curl_close($ch);
                 return $response;
             };
             $response = $this->_attempt($closure);
@@ -400,8 +454,35 @@
             if ($response === null) {
                 return null;
             }
-            if (isset($http_response_header) === true) {
-                $this->_lastRemoteRequestHeaders = $http_response_header;
+            list($headers, $body) = explode("\r\n\r\n", $response, 2);
+            $this->_setCURLResponseHeaders($headers);
+            return $body;
+        }
+
+        /**
+         * _requestURLUsingStreams
+         * 
+         * @access  protected
+         * @param   string $url
+         * @return  null|string
+         */
+        protected function _requestURLUsingStreams(string $url): ?string
+        {
+            $closure = function() use ($url) {
+                $streamContext = $this->_getRequestStreamContext();
+                $response = file_get_contents($url, false, $streamContext);
+                if (isset($http_response_header) === true) {
+                    $headers = $http_response_header;
+                    $this->_lastRemoteRequestHeaders = $headers;
+                }
+                return $response;
+            };
+            $response = $this->_attempt($closure);
+            if ($response === false) {
+                return null;
+            }
+            if ($response === null) {
+                return null;
             }
             return $response;
         }
@@ -421,6 +502,19 @@
             $int = (int) $int;
             $lowered = floor($int / $interval) * $interval;
             return $lowered;
+        }
+
+        /**
+         * _setCURLResponseHeaders
+         * 
+         * @access  protected
+         * @param   string $headers
+         * @return  void
+         */
+        protected function _setCURLResponseHeaders(string $headers): void
+        {
+            $headers = explode("\n", $headers);
+            $this->_lastRemoteRequestHeaders = $headers;
         }
 
         /**
@@ -524,6 +618,18 @@
         public function setOffset($offset): void
         {
             $this->_offset = $offset;
+        }
+
+        /**
+         * setRequestApproach
+         * 
+         * @access  public
+         * @param   string $requestApproach
+         * @return  void
+         */
+        public function setRequestApproach(string $requestApproach): void
+        {
+            $this->_requestApproach = $requestApproach;
         }
 
         /**
