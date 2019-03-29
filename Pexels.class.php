@@ -77,14 +77,6 @@
         protected $_offset = 0;
 
         /**
-         * _requestApproach
-         * 
-         * @var     string (default: 'streams')
-         * @access  protected
-         */
-        protected $_requestApproach = 'streams';
-
-        /**
          * _paths
          * 
          * @var     array
@@ -101,6 +93,14 @@
          * @access  protected
          */
         protected $_rateLimits = null;
+
+        /**
+         * _requestApproach
+         * 
+         * @var     string (default: 'streams')
+         * @access  protected
+         */
+        protected $_requestApproach = 'streams';
 
         /**
          * _requestTimeout
