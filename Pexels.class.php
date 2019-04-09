@@ -55,7 +55,7 @@
         /**
          * _logClosure
          * 
-         * @var     null|Closure (defualt: null)
+         * @var     null|Closure (default: null)
          * @access  protected
          */
         protected $_logClosure = null;
