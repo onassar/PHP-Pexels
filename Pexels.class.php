@@ -15,72 +15,72 @@
         /**
          * _attemptSleepDelay
          * 
-         * @var     int (default: 2000) in milliseconds
          * @access  protected
+         * @var     int (default: 2000) in milliseconds
          */
         protected $_attemptSleepDelay = 2000;
 
         /**
          * _base
          * 
-         * @var     string (default: 'https://api.pexels.com')
          * @access  protected
+         * @var     string (default: 'https://api.pexels.com')
          */
         protected $_base = 'https://api.pexels.com';
 
         /**
          * _key
          * 
-         * @var     false|string (default: false)
          * @access  protected
+         * @var     false|string (default: false)
          */
         protected $_key = false;
 
         /**
          * _lastRemoteRequestHeaders
          * 
-         * @var     array (default: array())
          * @access  protected
+         * @var     array (default: array())
          */
         protected $_lastRemoteRequestHeaders = array();
 
         /**
          * _limit
          * 
-         * @var     int (default: 40)
          * @access  protected
+         * @var     int (default: 40)
          */
         protected $_limit = 40;
 
         /**
          * _logClosure
          * 
-         * @var     null|Closure (default: null)
          * @access  protected
+         * @var     null|Closure (default: null)
          */
         protected $_logClosure = null;
 
         /**
          * _maxPerPage
          * 
-         * @var     int (default: 40)
          * @access  protected
+         * @var     int (default: 40)
          */
         protected $_maxPerPage = 40;
 
         /**
          * _offset
          * 
-         * @var     int (default: 0)
          * @access  protected
+         * @var     int (default: 0)
          */
         protected $_offset = 0;
 
         /**
          * _paths
          * 
-         * @var     array
          * @access  protected
+         * @var     array
          */
         protected $_paths = array(
             'search' => '/v1/search'
@@ -89,24 +89,24 @@
         /**
          * _rateLimits
          * 
-         * @var     null|array
          * @access  protected
+         * @var     null|array
          */
         protected $_rateLimits = null;
 
         /**
          * _requestApproach
          * 
-         * @var     string (default: 'streams')
          * @access  protected
+         * @var     string (default: 'streams')
          */
         protected $_requestApproach = 'streams';
 
         /**
          * _requestTimeout
          * 
-         * @var     int (default: 10)
          * @access  protected
+         * @var     int (default: 10)
          */
         protected $_requestTimeout = 10;
 
