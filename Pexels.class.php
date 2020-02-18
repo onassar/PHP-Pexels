@@ -496,10 +496,7 @@
             $closure = function() use ($url) {
                 $streamContext = $this->_getRequestStreamContext();
                 $response = file_get_contents($url, false, $streamContext);
-                if (isset($http_response_header) === true) {
-                    $headers = $http_response_header;
-                    $this->_lastRemoteRequestHeaders = $headers;
-                }
+                $this->_lastRemoteRequestHeaders = $http_response_header ?? $this->_lastRemoteRequestHeaders;
                 return $response;
             };
             $response = $this->_attempt($closure);
