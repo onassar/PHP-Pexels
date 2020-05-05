@@ -281,10 +281,8 @@
          */
         protected function _getQueryData(string $query): array
         {
-            $queryData = array(
-                'query' => $query,
-                'size' => 1
-            );
+            $size = 1;
+            $queryData = compact('query', 'size');
             return $queryData;
         }
 
