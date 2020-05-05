@@ -61,6 +61,14 @@
         protected $_logClosure = null;
 
         /**
+         * _maxAttempts
+         * 
+         * @access  protected
+         * @var     int (default: 2)
+         */
+        protected $_maxAttempts = 2;
+
+        /**
          * _maxPerPage
          * 
          * @access  protected
@@ -146,7 +154,7 @@
          * _attempt
          * 
          * Method which accepts a closure, and repeats calling it until
-         * $attempts have been made.
+         * $maxAttempts have been made.
          * 
          * This was added to account for requests failing (for a variety of
          * reasons).
@@ -154,10 +162,9 @@
          * @access  protected
          * @param   Closure $closure
          * @param   int $attempt (default: 1)
-         * @param   int $attempts (default: 2)
          * @return  null|string
          */
-        protected function _attempt(Closure $closure, int $attempt = 1, int $attempts = 2): ?string
+        protected function _attempt(Closure $closure, int $attempt = 1): ?string
         {
             try {
                 $response = call_user_func($closure);
@@ -171,12 +178,13 @@
                 $this->_log($msg);
                 $msg = $exception->getMessage();
                 $this->_log($msg);
-                if ($attempt < $attempts) {
+                $maxAttempts = $this->_maxAttempts;
+                if ($attempt < $maxAttempts) {
                     $delay = $this->_attemptSleepDelay;
                     $msg = 'Going to sleep for ' . ($delay);
                     LogUtils::log($msg);
                     $this->_sleep($delay);
-                    $response = $this->_attempt($closure, $attempt + 1, $attempts);
+                    $response = $this->_attempt($closure, $attempt + 1);
                     return $response;
                 }
                 $msg = 'Failed attempt';
@@ -628,6 +636,18 @@
         public function setLogClosure(Closure $closure): void
         {
             $this->_logClosure = $closure;
+        }
+
+        /**
+         * setMaxAttempts
+         * 
+         * @access  public
+         * @param   int $maxAttempts
+         * @return  void
+         */
+        public function setMaxAttempts(int $maxAttempts): void
+        {
+            $this->_maxAttempts = $maxAttempts;
         }
 
         /**
