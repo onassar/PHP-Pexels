@@ -140,13 +140,16 @@
          */
         protected function _addURLParams(string $url, array $params): string
         {
-            $query = http_build_query($params);
-            $piece = parse_url($url, PHP_URL_QUERY);
-            if ($piece === null) {
-                $url = ($url) . '?' . ($query);
+            if (empty($params) === true) {
                 return $url;
             }
-            $url = ($url) . '&' . ($query);
+            $queryString = http_build_query($params);
+            $piece = parse_url($url, PHP_URL_QUERY);
+            if ($piece === null) {
+                $url = ($url) . '?' . ($queryString);
+                return $url;
+            }
+            $url = ($url) . '&' . ($queryString);
             return $url;
         }
 
