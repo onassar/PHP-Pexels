@@ -213,7 +213,7 @@
             }
             $this->_rateLimits = $this->_getRateLimits();
 
-            // Invalid json response
+            // Invalid JSON response
             json_decode($response);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return null;
