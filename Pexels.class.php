@@ -185,7 +185,7 @@
                 if ($attempt < $maxAttempts) {
                     $delay = $this->_attemptSleepDelay;
                     $msg = 'Going to sleep for ' . ($delay);
-                    LogUtils::log($msg);
+                    Utils\Log::log($msg);
                     $this->_sleep($delay);
                     $response = $this->_attempt($closure, $attempt + 1);
                     return $response;
