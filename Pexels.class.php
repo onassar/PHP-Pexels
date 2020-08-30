@@ -63,8 +63,8 @@
          */
         public function __construct()
         {
-            // $this->setMaxPerPage(80);
-            $this->setMaxPerPage(16);
+            // $this->_maxPerPage = 80;
+            $this->_maxPerPage = 16;
             $this->_responseResultsIndex = 'photos';
         }
 
