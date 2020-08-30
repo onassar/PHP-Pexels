@@ -1,5 +1,9 @@
 <?php
 
+    // Namespace overhead
+    namespace onassar\Pexels;
+    use onassar\RemoteRequests;
+
     /**
      * Pexels
      * 
@@ -9,80 +13,35 @@
      * @link    https://www.pexels.com/api/documentation/
      * @link    https://github.com/onassar/PHP-Pexels
      * @author  Oliver Nassar <onassar@gmail.com>
+     * @extends RemoteRequests\Base
      */
-    class Pexels
+    class Pexels extends RemoteRequests\Base
     {
         /**
-         * _attemptSleepDelay
+         * RemoteRequets\Pagination
          * 
-         * @access  protected
-         * @var     int (default: 2000) in milliseconds
          */
-        protected $_attemptSleepDelay = 2000;
+        use RemoteRequests\Pagination;
 
         /**
-         * _base
+         * RemoteRequets\RateLimits
          * 
-         * @access  protected
-         * @var     string (default: 'https://api.pexels.com')
          */
-        protected $_base = 'https://api.pexels.com';
+        use RemoteRequests\RateLimits;
 
         /**
-         * _key
+         * RemoteRequets\SearchAPI
          * 
-         * @access  protected
-         * @var     false|string (default: false)
          */
-        protected $_key = false;
+        use RemoteRequests\SearchAPI;
 
         /**
-         * _lastRemoteRequestHeaders
+         * _host
          * 
          * @access  protected
-         * @var     array (default: array())
+         * @var     string (default: 'api.pexels.com')
          */
-        protected $_lastRemoteRequestHeaders = array();
-
-        /**
-         * _limit
-         * 
-         * @access  protected
-         * @var     int (default: 40)
-         */
-        protected $_limit = 40;
-
-        /**
-         * _logClosure
-         * 
-         * @access  protected
-         * @var     null|Closure (default: null)
-         */
-        protected $_logClosure = null;
-
-        /**
-         * _maxAttempts
-         * 
-         * @access  protected
-         * @var     int (default: 2)
-         */
-        protected $_maxAttempts = 2;
-
-        /**
-         * _maxPerPage
-         * 
-         * @access  protected
-         * @var     int (default: 40)
-         */
-        protected $_maxPerPage = 40;
-
-        /**
-         * _offset
-         * 
-         * @access  protected
-         * @var     int (default: 0)
-         */
-        protected $_offset = 0;
+        protected $_host = 'api.pexels.com';
 
         /**
          * _paths
@@ -95,133 +54,31 @@
         );
 
         /**
-         * _rateLimits
-         * 
-         * @access  protected
-         * @var     null|array (default: null)
-         */
-        protected $_rateLimits = null;
-
-        /**
-         * _requestApproach
-         * 
-         * @access  protected
-         * @var     string (default: 'streams')
-         */
-        protected $_requestApproach = 'streams';
-
-        /**
-         * _requestTimeout
-         * 
-         * @access  protected
-         * @var     int (default: 10)
-         */
-        protected $_requestTimeout = 10;
-
-        /**
          * __construct
          * 
+         * @link    https://www.pexels.com/api/documentation/#photos-search__per_page
+         * @see     https://i.imgur.com/JUkbKpC.png
          * @access  public
-         * @param   string $key
          * @return  void
          */
-        public function __construct(string $key)
+        public function __construct()
         {
-            $this->_key = $key;
+            // $this->setMaxPerPage(80);
+            $this->setMaxPerPage(16);
+            $this->_responseResultsIndex = 'photos';
         }
 
         /**
-         * _addURLParams
+         * _getAuthorizationHeader
          * 
          * @access  protected
-         * @param   string $url
-         * @param   array $params
          * @return  string
          */
-        protected function _addURLParams(string $url, array $params): string
+        protected function _getAuthorizationHeader(): string
         {
-            if (empty($params) === true) {
-                return $url;
-            }
-            $queryString = http_build_query($params);
-            $piece = parse_url($url, PHP_URL_QUERY);
-            if ($piece === null) {
-                $url = ($url) . '?' . ($queryString);
-                return $url;
-            }
-            $url = ($url) . '&' . ($queryString);
-            return $url;
-        }
-
-        /**
-         * _attempt
-         * 
-         * Method which accepts a closure, and repeats calling it until
-         * $maxAttempts have been made.
-         * 
-         * This was added to account for requests failing (for a variety of
-         * reasons).
-         * 
-         * @access  protected
-         * @param   Closure $closure
-         * @param   int $attempt (default: 1)
-         * @return  null|string
-         */
-        protected function _attempt(Closure $closure, int $attempt = 1): ?string
-        {
-            try {
-                $response = call_user_func($closure);
-                if ($attempt !== 1) {
-                    $msg = 'Subsequent success on attempt #' . ($attempt);
-                    $this->_log($msg);
-                }
-                return $response;
-            } catch (Exception $exception) {
-                $msg = 'Failed closure';
-                $this->_log($msg);
-                $msg = $exception->getMessage();
-                $this->_log($msg);
-                $maxAttempts = $this->_maxAttempts;
-                if ($attempt < $maxAttempts) {
-                    $delay = $this->_attemptSleepDelay;
-                    $msg = 'Going to sleep for ' . ($delay);
-                    Utils\Log::log($msg);
-                    $this->_sleep($delay);
-                    $response = $this->_attempt($closure, $attempt + 1);
-                    return $response;
-                }
-                $msg = 'Failed attempt';
-                $this->_log($msg);
-            }
-            return null;
-        }
-
-        /**
-         * _get
-         * 
-         * @access  protected
-         * @param   array $requestData
-         * @return  null|array
-         */
-        protected function _get(array $requestData): ?array
-        {
-            // Make the request
-            $url = $this->_getSearchURL($requestData);
-            $response = $this->_requestURL($url);
-            if ($response === null) {
-                return null;
-            }
-            $this->_rateLimits = $this->_getRateLimits();
-
-            // Invalid JSON response
-            json_decode($response);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return null;
-            }
-
-            // Response formatting
-            $response = json_decode($response, true);
-            return $response;
+            $apiKey = $this->_apiKey;
+            $header = 'Authorization: ' . ($apiKey);
+            return $header;
         }
 
         /**
@@ -232,458 +89,23 @@
          */
         protected function _getCURLRequestHeaders(): array
         {
-            $key = $this->_key;
-            $headers = array(
-                'Authorization: ' . ($key)
-            );
+            $headers = parent::_getCURLRequestHeaders();
+            $header = $this->_getAuthorizationHeader();
+            array_push($headers, $header);
             return $headers;
         }
 
         /**
-         * _getFormattedSearchResponse
-         * 
-         * @access  protected
-         * @param   string $query
-         * @param   array $response
-         * @return  array
-         */
-        protected function _getFormattedSearchResponse(string $query, array $response): array
-        {
-            $results = $response['photos'];
-            foreach ($results as $index => $hit) {
-                $results[$index]['original_query'] = $query;
-            }
-            return $results;
-        }
-
-        /**
-         * _getPaginationData
+         * _getRequestStreamContextOptions
          * 
          * @access  protected
          * @return  array
          */
-        protected function _getPaginationData(): array
+        protected function _getRequestStreamContextOptions(): array
         {
-            $perPage = $this->_getResultsPerPage();
-            $offset = $this->_offset;
-            $offset = $this->_roundToLower($offset, $perPage);
-            $page = ceil($offset / $perPage) + 1;
-            $paginationData = array(
-                'page' => $page,
-                'per_page' => $perPage
-            );
-            return $paginationData;
-        }
-
-        /**
-         * _getQueryData
-         * 
-         * @access  protected
-         * @param   string $query
-         * @return  array
-         */
-        protected function _getQueryData(string $query): array
-        {
-            $size = 1;
-            $queryData = compact('query', 'size');
-            return $queryData;
-        }
-
-        /**
-         * _getRateLimits
-         * 
-         * @see     http://php.net/manual/en/reserved.variables.httpresponseheader.php
-         * @access  protected
-         * @return  null|array
-         */
-        protected function _getRateLimits(): ?array
-        {
-            $headers = $this->_lastRemoteRequestHeaders;
-            if ($headers === null) {
-                return null;
-            }
-            $formatted = array();
-            foreach ($headers as $header) {
-                $pieces = explode(':', $header);
-                if (count($pieces) >= 2) {
-                    $formatted[$pieces[0]] = $pieces[1];
-                }
-            }
-            $rateLimits = array(
-                'remaining' => false,
-                'limit' => false,
-                'reset' => false
-            );
-            if (isset($formatted['X-Ratelimit-Remaining']) === true) {
-                $rateLimits['remaining'] = (int) trim($formatted['X-Ratelimit-Remaining']);
-            }
-            if (isset($formatted['X-Ratelimit-Limit']) === true) {
-                $rateLimits['limit'] = (int) trim($formatted['X-Ratelimit-Limit']);
-            }
-            if (isset($formatted['X-Ratelimit-Reset']) === true) {
-                $rateLimits['reset'] = (int) trim($formatted['X-Ratelimit-Reset']);
-            }
-            return $rateLimits;
-        }
-
-        /**
-         * _getRequestData
-         * 
-         * @access  protected
-         * @param   string $query
-         * @return  array
-         */
-        protected function _getRequestData(string $query): array
-        {
-            $paginationData = $this->_getPaginationData();
-            $queryData = $this->_getQueryData($query);
-            $requestData = array_merge($paginationData, $queryData);
-            return $requestData;
-        }
-
-        /**
-         * _getRequestStreamContext
-         * 
-         * @access  protected
-         * @return  resource
-         */
-        protected function _getRequestStreamContext()
-        {
-            $key = $this->_key;
-            $requestTimeout = $this->_requestTimeout;
-            $options = array(
-                'http' => array(
-                    'header' => 'Authorization: ' . ($key),
-                    'ignore_errors' => true,
-                    'method' => 'GET',
-                    'timeout' => $requestTimeout
-                )
-            );
-            $streamContext = stream_context_create($options);
-            return $streamContext;
-        }
-
-        /**
-         * _getResultsPerPage
-         * 
-         * @access  protected
-         * @return  int
-         */
-        protected function _getResultsPerPage(): int
-        {
-            $resultssPerPage = min($this->_limit, $this->_maxPerPage);
-            return $resultssPerPage;
-        }
-
-        /**
-         * _getSearchURL
-         * 
-         * @access  protected
-         * @param   array $requestData
-         * @return  string
-         */
-        protected function _getSearchURL(array $requestData): string
-        {
-            $base = $this->_base;
-            $path = $this->_paths['search'];
-            $data = $requestData;
-            $url = ($base) . ($path);
-            $url = $this->_addURLParams($url, $data);
-            return $url;
-        }
-
-        /**
-         * _log
-         * 
-         * @access  protected
-         * @param   string $msg
-         * @return  bool
-         */
-        protected function _log(string $msg): bool
-        {
-            if ($this->_logClosure === null) {
-                error_log($msg);
-                return false;
-            }
-            $closure = $this->_logClosure;
-            $args = array($msg);
-            call_user_func_array($closure, $args);
-            return true;
-        }
-
-        /**
-         * _parseCURLResponse
-         * 
-         * This method was required because at times the cURL requests would not
-         * return the headers, which would cause issues.
-         * 
-         * @access  protected
-         * @param   string $response
-         * @return  array
-         */
-        protected function _parseCURLResponse(string $response): array
-        {
-            $delimiter = "\r\n\r\n";
-            $pieces = explode($delimiter, $response);
-            if (count($pieces) === 1) {
-                $headers = '';
-                $body = $response;
-                $response = array($headers, $body);
-                return $response;
-            }
-            list($headers, $body) = explode("\r\n\r\n", $response, 2);
-            $response = array($headers, $body);
-            return $response;
-        }
-
-        /**
-         * _requestURL
-         * 
-         * @throws  Exception
-         * @access  protected
-         * @param   string $url
-         * @return  null|string
-         */
-        protected function _requestURL(string $url): ?string
-        {
-            if ($this->_requestApproach === 'cURL') {
-                $response = $this->_requestURLUsingCURL($url);
-                return $response;
-            }
-            if ($this->_requestApproach === 'streams') {
-                $response = $this->_requestURLUsingStreams($url);
-                return $response;
-            }
-            $msg = 'Invalid request approach';
-            throw new Exception($msg);
-        }
-
-        /**
-         * _requestURLUsingCURL
-         * 
-         * @see     https://stackoverflow.com/a/9183272/115025
-         * @access  protected
-         * @param   string $url
-         * @return  null|string
-         */
-        protected function _requestURLUsingCURL(string $url): ?string
-        {
-            $closure = function() use ($url) {
-                $headers = $this->_getCURLRequestHeaders();
-                $requestTimeout = $this->_requestTimeout;
-                $ch = curl_init($url);
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $requestTimeout);
-                curl_setopt($ch, CURLOPT_TIMEOUT, $requestTimeout);
-                curl_setopt($ch, CURLOPT_HEADER, 1);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                $response = curl_exec($ch);
-                curl_close($ch);
-                return $response;
-            };
-            $response = $this->_attempt($closure);
-            if ($response === false) {
-                return null;
-            }
-            if ($response === null) {
-                return null;
-            }
-            list($headers, $body) = $this->_parseCURLResponse($response);
-            $this->_setCURLResponseHeaders($headers);
-            return $body;
-        }
-
-        /**
-         * _requestURLUsingStreams
-         * 
-         * @access  protected
-         * @param   string $url
-         * @return  null|string
-         */
-        protected function _requestURLUsingStreams(string $url): ?string
-        {
-            $closure = function() use ($url) {
-                $streamContext = $this->_getRequestStreamContext();
-                $response = file_get_contents($url, false, $streamContext);
-                $this->_lastRemoteRequestHeaders = $http_response_header ?? $this->_lastRemoteRequestHeaders;
-                return $response;
-            };
-            $response = $this->_attempt($closure);
-            if ($response === false) {
-                return null;
-            }
-            if ($response === null) {
-                return null;
-            }
-            return $response;
-        }
-
-        /**
-         * _roundToLower
-         * 
-         * @access  protected
-         * @param   int $int
-         * @param   int $interval
-         * @return  int
-         */
-        protected function _roundToLower(int $int, int $interval): int
-        {
-            $int = (string) $int;
-            $int = preg_replace('/[^0-9]/', '', $int);
-            $int = (int) $int;
-            $lowered = floor($int / $interval) * $interval;
-            return $lowered;
-        }
-
-        /**
-         * _setCURLResponseHeaders
-         * 
-         * @access  protected
-         * @param   string $headers
-         * @return  void
-         */
-        protected function _setCURLResponseHeaders(string $headers): void
-        {
-            $headers = explode("\n", $headers);
-            $this->_lastRemoteRequestHeaders = $headers;
-        }
-
-        /**
-         * _sleep
-         * 
-         * @access  protected
-         * @param   int $duration in milliseconds
-         * @return  void
-         */
-        protected function _sleep(int $duration): void
-        {
-            usleep($duration * 1000);
-        }
-
-        /**
-         * getRateLimits
-         * 
-         * @access  public
-         * @return  null|array
-         */
-        public function getRateLimits(): ?array
-        {
-            $rateLimits = $this->_rateLimits;
-            return $rateLimits;
-        }
-
-        /**
-         * search
-         * 
-         * @access  public
-         * @param   string $query
-         * @param   array &persistent (default: array())
-         * @return  null|array
-         */
-        public function search(string $query, array &$persistent = array()): ?array
-        {
-            // Request results
-            $requestData = $this->_getRequestData($query);
-            $response = $this->_get($requestData);
-
-            // Failed request
-            if ($response === null) {
-                return array();
-            }
-            if (isset($response['photos']) === false) {
-                return array();
-            }
-
-            // Format + more than enough found
-            $results = $this->_getFormattedSearchResponse($query, $response);
-            $resultsCount = count($results);
-            $mod = $this->_offset % $this->_getResultsPerPage();
-            if ($mod !== 0) {
-                array_splice($results, 0, $mod);
-            }
-            $persistent = array_merge($persistent, $results);
-            $persistentCount = count($persistent);
-            if ($persistentCount >= $this->_limit) {
-                return array_slice($persistent, 0, $this->_limit);
-            }
-            if ($resultsCount < $this->_maxPerPage) {
-                return array_slice($persistent, 0, $this->_limit);
-            }
-
-            // Recusively get more
-            $this->_offset += count($results);
-            return $this->search($query, $persistent);
-        }
-
-        /**
-         * setLimit
-         * 
-         * @access  public
-         * @param   string $limit
-         * @return  void
-         */
-        public function setLimit($limit): void
-        {
-            $this->_limit = $limit;
-        }
-
-        /**
-         * setLogClosure
-         * 
-         * @access  public
-         * @param   Closure $closure
-         * @return  void
-         */
-        public function setLogClosure(Closure $closure): void
-        {
-            $this->_logClosure = $closure;
-        }
-
-        /**
-         * setMaxAttempts
-         * 
-         * @access  public
-         * @param   int $maxAttempts
-         * @return  void
-         */
-        public function setMaxAttempts(int $maxAttempts): void
-        {
-            $this->_maxAttempts = $maxAttempts;
-        }
-
-        /**
-         * setOffset
-         * 
-         * @access  public
-         * @param   string $offset
-         * @return  void
-         */
-        public function setOffset($offset): void
-        {
-            $this->_offset = $offset;
-        }
-
-        /**
-         * setRequestApproach
-         * 
-         * @access  public
-         * @param   string $requestApproach
-         * @return  void
-         */
-        public function setRequestApproach(string $requestApproach): void
-        {
-            $this->_requestApproach = $requestApproach;
-        }
-
-        /**
-         * setRequestTimeout
-         * 
-         * @access  public
-         * @param   int $requestTimeout
-         * @return  void
-         */
-        public function setRequestTimeout(int $requestTimeout): void
-        {
-            $this->_requestTimeout = $requestTimeout;
+            $options = parent::_getRequestStreamContextOptions();
+            $header = $this->_getAuthorizationHeader();
+            $options['http']['header'] = $header;
+            return $options;
         }
     }
