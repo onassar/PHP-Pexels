@@ -7,7 +7,7 @@
     /**
      * Pexels
      * 
-     * PHP wrapper for Pexels
+     * PHP wrapper for Pexels.
      * 
      * @link    https://www.pexels.com/api/
      * @link    https://www.pexels.com/api/documentation/
@@ -63,8 +63,8 @@
          */
         public function __construct()
         {
-            // $this->_maxPerPage = 80;
-            $this->_maxPerPage = 16;
+            // $this->_maxResultsPerPage = 80;
+            $this->_maxResultsPerPage = 16;
             $this->_responseResultsIndex = 'photos';
         }
 
