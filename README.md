@@ -1,5 +1,5 @@
 # PHP-Pexels
-PHP SDK for running queries against the millions of icons provided by
+PHP SDK for running queries against the millions of photos provided by
 [Pexels](https://pexels.com). Includes recursive searches.
 
 ### Supports
