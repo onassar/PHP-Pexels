@@ -18,21 +18,11 @@
     class Pexels extends RemoteRequests\Base
     {
         /**
-         * RemoteRequets\Pagination
+         * Traits
          * 
          */
         use RemoteRequests\Pagination;
-
-        /**
-         * RemoteRequets\RateLimits
-         * 
-         */
         use RemoteRequests\RateLimits;
-
-        /**
-         * RemoteRequets\SearchAPI
-         * 
-         */
         use RemoteRequests\SearchAPI;
 
         /**
