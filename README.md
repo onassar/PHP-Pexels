@@ -1,13 +1,21 @@
 # PHP-Pexels
+PHP SDK for running queries against the millions of icons provided by
+[Pexels](https://pexels.com). Includes recursive searches.
 
-Simple, easy-to-use Pexels PHP SDK for making requests (including paginated recursive requests) against the Pexels API. Includes more advanced (than usual) features including handling failed requests (re-requesting one additional time, incase there was an SSL or connection handshake error) along with making sequential requests when the desired limit exceeds the Pexels API limit.
+### Supports
+- Searches
 
-### Sample Usage
+### Sample Search
 ``` php
-$client = new Pexels('abcdef_0000');
-$client->setOffset(0);
+$client = new onassar\Pexels\Pexels();
+$client->setAPIKey('***');
 $client->setLimit(10);
-$response = $client->search('nature');
-print_r($response);
+$client->setOffset(0);
+$results = $client->search('love') ?? array();
+print_r($results);
 exit(0);
 ```
+
+### Note
+Requires
+[PHP-RemoteResources](https://github.com/onassar/PHP-RemoteResources).
