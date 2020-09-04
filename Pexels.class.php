@@ -21,9 +21,9 @@
          * Traits
          * 
          */
-        use RemoteRequests\Pagination;
-        use RemoteRequests\RateLimits;
-        use RemoteRequests\SearchAPI;
+        use RemoteRequests\Traits\Pagination;
+        use RemoteRequests\Traits\RateLimits;
+        use RemoteRequests\Traits\SearchAPI;
 
         /**
          * _host
