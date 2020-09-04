@@ -9,9 +9,9 @@
      * 
      * PHP wrapper for Pexels.
      * 
+     * @link    https://github.com/onassar/PHP-Pexels
      * @link    https://www.pexels.com/api/
      * @link    https://www.pexels.com/api/documentation/
-     * @link    https://github.com/onassar/PHP-Pexels
      * @author  Oliver Nassar <onassar@gmail.com>
      * @extends RemoteRequests\Base
      */
