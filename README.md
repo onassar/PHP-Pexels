@@ -5,7 +5,7 @@ PHP SDK for running queries against the millions of photos provided by
 ### Supports
 - Searches
 
-### Requirements
+### Requires
 - [PHP-RemoteRequests](https://github.com/onassar/PHP-RemoteRequests)
 
 ### Sample Search
