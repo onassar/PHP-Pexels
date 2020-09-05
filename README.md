@@ -10,7 +10,7 @@ PHP SDK for running queries against the millions of photos provided by
 
 ### Sample Search
 ``` php
-$client = new onassar\Pexels\Pexels();
+$client = new onassar\Pexels\Base();
 $client->setAPIKey('***');
 $client->setLimit(10);
 $client->setOffset(0);

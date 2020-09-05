@@ -5,7 +5,7 @@
     use onassar\RemoteRequests;
 
     /**
-     * Pexels
+     * Base
      * 
      * PHP wrapper for Pexels.
      * 
@@ -15,7 +15,7 @@
      * @author  Oliver Nassar <onassar@gmail.com>
      * @extends RemoteRequests\Base
      */
-    class Pexels extends RemoteRequests\Base
+    class Base extends RemoteRequests\Base
     {
         /**
          * Traits
