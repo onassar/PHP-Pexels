@@ -53,8 +53,8 @@
          */
         public function __construct()
         {
-            $this->_maxResultsPerRequest = 80;
-            $this->_responseResultsIndex = 'photos';
+            $this->_maxResultsSupportedPerRequest = 80;
+            $this->_responseResultsIndexKey = 'photos';
         }
 
         /**
